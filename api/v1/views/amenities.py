@@ -8,16 +8,16 @@ Created on Tue Sep  1 14:42:23 2020
 from flask import Blueprint, jsonify, request, abort
 from api.v1.views import app_views
 from models import storage
-from models.state import State
+from models.amenity import Amenity
 
 
-@app_views.route('/states', methods=['GET', 'POST'], strict_slashes=False)
-def states():
-    """Create a new view for State objects that handles all default
+@app_views.route('/amenities', methods=['GET', 'POST'], strict_slashes=False)
+def amenities():
+    """Create a new view for Amenity objects that handles all default
     RestFul API actions.
     """
     if request.method == 'GET':
-        return jsonify([val.to_dict() for val in storage.all('State')
+        return jsonify([val.to_dict() for val in storage.all('Amenity')
                         .values()])
     elif request.method == 'POST':
         post = request.get_json()
@@ -25,23 +25,23 @@ def states():
             return jsonify({'error': 'Not a JSON'}), 400
         elif post.get('name') is None:
             return jsonify({'error': 'Missing name'}), 400
-        new_state = State(**post)
-        new_state.save()
-        return jsonify(new_state.to_dict()), 201
+        new_amenity = Amenity(**post)
+        new_amenity.save()
+        return jsonify(new_amenity.to_dict()), 201
 
 
-@app_views.route('/states/<string:state_id>',
+@app_views.route('/amenities/<string:amenity_id>',
                  methods=['GET', 'PUT', 'DELETE'], strict_slashes=False)
-def get_state_id(state_id):
-    """Retrieves a state object with a specific id"""
-    state = storage.get('State', state_id)
-    if state is None:
+def get_amenity_id(amenity_id):
+    """Retrieves a amenity object with a specific id"""
+    amenity = storage.get('Amenity', amenity_id)
+    if amenity is None:
         abort(404)
     elif request.method == 'GET':
-        return jsonify(state.to_dict())
+        return jsonify(amenity.to_dict())
     elif request.method == 'DELETE':
-        state = storage.get('State', state_id)
-        storage.delete(state)
+        amenity = storage.get('Amenity', amenity_id)
+        storage.delete(amenity)
         storage.save()
         return jsonify({}), 200
     elif request.method == 'PUT':
@@ -50,6 +50,6 @@ def get_state_id(state_id):
             return jsonify({'error': 'Not a JSON'}), 400
         for key, value in put.items():
             if key not in ['id', 'created_at', 'updated_at']:
-                setattr(state, key, value)
+                setattr(amenity, key, value)
                 storage.save()
-        return jsonify(state.to_dict()), 200
+        return jsonify(amenity.to_dict()), 200
